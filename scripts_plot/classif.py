@@ -1,8 +1,10 @@
 import os
 import pickle
+import numpy as np
 from matplotlib import pyplot as plt
 from argparse import ArgumentParser
 from sklearn.metrics import RocCurveDisplay
+import seaborn as sns
 
 EVAL = [
     'Normal vs all',
@@ -103,16 +105,46 @@ def main_auc(args):
         RocCurveDisplay.from_predictions(y_true[target], y_pred[target], ax=ax[i])
         ax[i].set_title(target, fontsize=18)
 
-    save_name = 'ROC_WSSS4LUAD.pdf'
+    save_name = 'ROC_WSSS4LUAD.png'
     # fig.savefig(save_name, bbox_inches='tight')
     fig.savefig(save_name)
     print('Figure saved in', save_name)
 
 
 def main_confusion(args):
-    pass
+    data = load_data(args.predictions)
+
+    sum_proba = np.zeros((3, 3))
+    count = np.zeros(3)
+
+    for case_n in list(data.keys()):
+        true_label = data[case_n]['true_label']
+        proba = data[case_n]['pred']
+
+        if true_label == 3:
+            continue
+
+        count[true_label] += 1
+        sum_proba[true_label, :] += np.array(proba)
+
+    confusion_m = sum_proba / count[:, None]
+
+    fig, ax = plt.subplots(nrows=1, ncols=1, figsize=(4, 4))
+    sns.heatmap(confusion_m, annot=True, ax=ax)
+
+    ax.set_xlabel('Prediction')
+    ax.set_ylabel('True label')
+
+    save_name = 'Confusion_WSSS4LUAD.png'
+    # fig.savefig(save_name, bbox_inches='tight')
+    fig.savefig(save_name)
+    print('Figure saved in', save_name)
+
+    # import pdb
+    # pdb.set_trace()
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
+    main_confusion(args)
     main_auc(args)

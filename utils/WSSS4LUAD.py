@@ -16,5 +16,5 @@ def gen_bg_mask(orig_img):
     binary = np.uint8(binary)
     dst = morphology.remove_small_objects(binary == 255, min_size=50, connectivity=1)
     bg_mask = np.zeros(orig_img.shape[:2])
-    bg_mask[dst == True] = 1.  # 1 == background
+    bg_mask[dst==True] = 1.  # 1 = background
     return bg_mask
