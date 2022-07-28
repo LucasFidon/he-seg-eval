@@ -6,6 +6,7 @@ from evaluation_metrics.eval import compute_evaluation_metrics, METRIC_NAMES, pr
 parser = ArgumentParser()
 parser.add_argument('--testing_set_folder', required=True)
 parser.add_argument('--predictions_folder', required=True)
+parser.add_argument('--task', default=TASKS[0], help='Any values in %s' % str(TASKS))
 
 
 def main(args):
@@ -26,7 +27,7 @@ def main(args):
             pred_seg_path,
             gt_seg_path,
             roi_list=ROI_EVAL,
-            roi_to_labels=LABELS_EVAL,
+            roi_to_labels=LABELS[args.task],
         )
         for roi in ROI_EVAL:
             if dice[roi] is not None:

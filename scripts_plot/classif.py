@@ -140,9 +140,6 @@ def main_confusion(args):
     fig.savefig(save_name)
     print('Figure saved in', save_name)
 
-    # import pdb
-    # pdb.set_trace()
-
 
 if __name__ == '__main__':
     args = parser.parse_args()

@@ -8,6 +8,16 @@ from definitions import *
 METRIC_NAMES = ['dice', 'hausdorff']
 
 
+def _norm_roi_to_label_map(mapping):
+    out = {}
+    for roi, val in mapping.items():
+        if isinstance(val, int):
+            out[roi] = [val]
+        else:
+            out[roi] = val
+    return out
+
+
 def compute_evaluation_metrics(pred_seg_path, gt_seg_path, roi_list, roi_to_labels):
     def load_np(seg_path):
         seg = nib.load(seg_path).get_fdata().astype(np.uint8)
@@ -17,14 +27,17 @@ def compute_evaluation_metrics(pred_seg_path, gt_seg_path, roi_list, roi_to_labe
     pred_seg = load_np(pred_seg_path)
     gt_seg = load_np(gt_seg_path)
 
+    roi_to_labels = _norm_roi_to_label_map(roi_to_labels)
+
     # Check which ROIs are present
     is_present = {}
     labels_present = np.unique(gt_seg).tolist()
     for roi in roi_list:
         present = False
-        for label in roi_to_labels[roi]:
-            if label in labels_present:
-                present = True
+        if roi in list(roi_to_labels):
+            for label in roi_to_labels[roi]:
+                if label in labels_present:
+                    present = True
         is_present[roi] = present
 
     # Compute the metrics

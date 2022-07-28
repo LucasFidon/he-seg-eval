@@ -1,18 +1,25 @@
 
+TASKS = [
+    'WSSS4LUAD',
+    'WSSS4LUAD_2C',
+]
+
 LABELS = {
-    'Normal': 1,
-    'Stroma': 2,
-    'Tumor': 3,
-    'background': 0,
+    'WSSS4LUAD': {
+        'Normal': 1,
+        'Stroma': 2,
+        'Tumor': 3,
+        'background': 0,
+        'Normal/Stroma': [1, 2],
+    },
+    'WSSS4LUAD_2C': {
+        'Normal/Stroma': 1,
+        'Tumor': 2,
+        'background': 0,
+    },
 }
-LABELS_EVAL = {
-    'Abnormal': [2, 3],
-    'Normal': [1],
-    'Stroma': [2],
-    'Tumor': [3],
-}
-ROI = list(LABELS.keys())
-ROI_EVAL = list(LABELS_EVAL.keys())
+ROI = list(LABELS['WSSS4LUAD'].keys())
+ROI_EVAL = list(LABELS['WSSS4LUAD'].keys())
 METRICS = ['dice', 'hausdorff']
 # TODO: what is the unit
 MAX_HD = 300  # in mm (default maximum value given when the predicted mask is empty)
