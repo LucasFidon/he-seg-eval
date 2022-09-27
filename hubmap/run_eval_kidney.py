@@ -6,10 +6,13 @@ parentdir = os.path.dirname(currentdir)
 sys.path.insert(0, parentdir)
 import pickle
 from argparse import ArgumentParser
+import numpy as np
 import pandas as pd
 import nibabel as nib
 from evaluation_metrics.segmentation_metrics import *
 from definition import CSV_VAL_KIDNEY
+from postprocessing import make_cc_convex
+
 
 METRIC_NAMES = ['dice', 'hausdorff']
 MAX_HD = 3000
@@ -17,6 +20,7 @@ MAX_HD = 3000
 parser = ArgumentParser()
 parser.add_argument('--pred_csv', required=True)
 parser.add_argument('--valid_csv', default=CSV_VAL_KIDNEY)
+parser.add_argument('--convex', action='store_true')
 
 
 def rle2mask(mask_rle, shape=(3000, 3000)):
@@ -74,10 +78,16 @@ def main(args):
             # Save time as we know the true segmentation is never empty
             metrics['dice'].append(0.)
             metrics['hausdorff'].append(mpp * MAX_HD)
+            print('\n\033[92m(%d/%d) Case' % (i + 1, len(df)), idx, '\033[0m')
+            print('Dice score: 0')
+            print('HD95:', mpp * MAX_HD)
             continue
 
         true_seg = rle2mask(rle)
         pred_seg = rle2mask(pred_rle)
+        if args.convex:
+            print('Make the predicted segmentation connected components convex')
+            pred_seg = make_cc_convex(pred_seg)
         dice = 100 * dice_score(pred_seg, true_seg, fg_class=1)
         metrics['dice'].append(dice)
         haus = mpp * min(
@@ -90,7 +100,7 @@ def main(args):
             )
         )
         metrics['hausdorff'].append(haus)
-        print('\n\033[92mCase', idx, '\033[0m')
+        print('\n\033[92m(%d/%d) Case' % (i+1, len(df)), idx, '\033[0m')
         print('Dice score:', dice)
         print('HD95:', haus)
         if dice == 0:
@@ -98,7 +108,10 @@ def main(args):
             print(len(rle))
 
     # Print the results
-    metrics_save_path = args.pred_csv.replace('.csv',  '_metrics.pkl')
+    if args.convex:
+        metrics_save_path = args.pred_csv.replace('.csv', '_postconvex_metrics.pkl')
+    else:
+        metrics_save_path = args.pred_csv.replace('.csv',  '_metrics.pkl')
     print_results(metrics, save_path=metrics_save_path)
     print('Metrics have been saved in %s' % metrics_save_path)
 
